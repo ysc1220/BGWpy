@@ -36,10 +36,11 @@ class QeTask(DFTTask, IOTask):
 
         super(QeTask, self).__init__(dirname, **kwargs)
 
-        self.prefix = kwargs['prefix']
-        self.savedir = self.prefix + '.save'
+        self.prefix = kwargs.get('prefix', "qe")
+        self.pseudo_key =   kwargs.get("pseudo_key", ".")
+        self.savedir = kwargs.get("savedir", self.prefix + '.save')
 
-        self.runscript['PW'] = kwargs.get('PW', 'pw.x')
+        self.runscript['PW'] = kwargs.get('PW', os.path.join(os.environ["QEDIR"], 'pw.x'))
         self.runscript['PWFLAGS'] = kwargs.get('PWFLAGS', '')
 
     def exec_from_savedir(self):

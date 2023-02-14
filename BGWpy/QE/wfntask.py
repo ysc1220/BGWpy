@@ -13,8 +13,8 @@ class QeWfnTask(QeTask):
 
     _TASK_NAME = 'Wfn'
 
-    _input_fname = 'wfn.in'
-    _output_fname = 'wfn.out'
+    #_input_fname = 'wfn.in'
+    #_output_fname = 'wfn.out'
 
     def __init__(self, dirname, **kwargs):
         """
@@ -47,7 +47,7 @@ class QeWfnTask(QeTask):
             by a density calculation ('charge-density.dat' or
             'charge-density.hdf5').
         data_file_fname : str
-            Path to the xml data file produced 
+            Path to the xml data file produced
             by a density calculation ('data-file.xml').
         spin_polarization_fname : str, optional
             Path to the spin polarization file produced
@@ -70,25 +70,27 @@ class QeWfnTask(QeTask):
             Weights of each k-point.
 
         """
+        self._input_fname   =   kwargs.get("input_fname", "wfn.in")
+        self._output_fname  =   kwargs.get("output_fname", "wfn.out")
+        self._scfout_fname  =   kwargs.get("scfout_fname", "scf.out")
 
+        self.read_fft()
         super(QeWfnTask, self).__init__(dirname, **kwargs)
         self.add_pseudos_copy()
 
         kpts, wtks = self.get_kpts(**kwargs)
 
-        self.charge_density_fname = kwargs['charge_density_fname']
+        #self.charge_density_fname = kwargs['charge_density_fname']
         if 'spin_polarization_fname' in kwargs:
             self.spin_polarization_fname = kwargs['spin_polarization_fname']
 
-        self.data_file_fname = kwargs['data_file_fname']
+        #self.data_file_fname = kwargs['data_file_fname']
 
         # Input file
         self.input = get_bands_input(
             self.prefix,
-            self.pseudo_dir,
-            self.pseudos,
+            self.pseudo_key,
             self.structure,
-            kwargs['ecutwfc'],
             kpts,
             wtks,
             nbnd = kwargs.get('nbnd'),
@@ -100,7 +102,7 @@ class QeWfnTask(QeTask):
         self.input.fname = self._input_fname
 
         # Run script
-        self.runscript.append('$MPIRUN $PW $PWFLAGS -in {} &> {}'.format(
+        self.runscript.append('$MPIRUN $PW $PWFLAGS -inp {} &> {}'.format(
                               self._input_fname, self._output_fname))
 
     @property
@@ -112,7 +114,7 @@ class QeWfnTask(QeTask):
         self._charge_density_fname = value
         name = 'charge-density.hdf5' if self._use_hdf5_qe else 'charge-density.dat'
         dest = os.path.join(self.savedir, name)
-        self.update_link(value, dest)
+        #self.update_link(value, dest)
 
     @property
     def spin_polarization_fname(self):
@@ -122,7 +124,7 @@ class QeWfnTask(QeTask):
     def spin_polarization_fname(self, value):
         self._spin_polarization_fname = value
         dest = os.path.join(self.savedir, 'spin-polarization.dat')
-        self.update_link(value, dest)
+        #self.update_link(value, dest)
 
     @property
     def data_file_fname(self):
@@ -135,7 +137,7 @@ class QeWfnTask(QeTask):
             dest = os.path.join(self.savedir, 'data-file-schema.xml')
         else:
             dest = os.path.join(self.savedir, 'data-file.xml')
-        self.update_copy(value, dest)
+        #self.update_copy(value, dest)
 
     def add_pseudos_copy(self):
         """
@@ -151,7 +153,7 @@ class QeWfnTask(QeTask):
         for pseudo in self.pseudos:
             source = os.path.join(sourcedir, pseudo)
             dest = os.path.join(self.savedir, pseudo)
-            self.update_copy(source, dest)
+            #self.update_copy(source, dest)
 
     # Yikes! I have to recopy the property. python3 would be so much better...
     @property
@@ -169,3 +171,14 @@ class QeWfnTask(QeTask):
                 self.input.control['pseudo_dir'] = self._pseudo_dir
         if 'pseudos' in dir(self):
             self.add_pseudos_copy()
+
+    def read_fft(self):
+        fft =   []
+        with open(self._scfout_fname) as fil:
+            for line in fil:
+                if "FFT dimensions" in line:
+                    line    =   line.replace(")", " ").replace(",", " ").split()
+                    for i in range(7, 10):  fft.append(int(line[i]))
+
+        self.fft    =   fft
+

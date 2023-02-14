@@ -114,7 +114,7 @@ class RunScript(Writable):
         self.copies.append([src, dest])
 
     def merge(self, other):
-        """ 
+        """
         Merge an other RunScript, executing the lines sequentially,
         assuming that both scripts are in the same directory.
         """
@@ -155,7 +155,7 @@ class RunScript(Writable):
         else:
             raise Exception("Cannot process the quotes for variable named " +
                             "{}\nwith value {}.\n".format(name, value) +
-                            "Action: simply add this declaration " + 
+                            "Action: simply add this declaration " +
                             "in the 'main' list of commands.")
 
         return value
@@ -178,7 +178,7 @@ class RunScript(Writable):
                 # Don't attempt to create a link if the names match.
                 if target == dest:
                     continue
-                S += 'ln -nfs {} {}\n'.format(target, dest)
+                S += 'ln -fs {} {}\n'.format(target, dest)
 
         if self.copies:
             S += '\n'

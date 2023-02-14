@@ -25,7 +25,7 @@ class Qe2BgwInput(Namelist):
 
         ngkpt = kwargs.pop('ngkpt', 3*[.0])
         kshift = kwargs.pop('kshift', 3*[.0])
-        qshift = kwargs.pop('qshift', 3*[.0]) 
+        qshift = kwargs.pop('qshift', 3*[.0])
 
         super(Qe2BgwInput, self).__init__('input_pw2bgw', *args, **kwargs)
 
@@ -106,8 +106,8 @@ class Qe2BgwTask(QeTask):
 
     _TASK_NAME = 'PW2BGW'
 
-    _input_fname = 'wfn.pp.in'
-    _output_fname = 'wfn.pp.out'
+    #_input_fname = 'wfn.pp.in'
+    #_output_fname = 'wfn.pp.out'
 
     def __init__(self, dirname, **kwargs):
         """
@@ -163,7 +163,9 @@ class Qe2BgwTask(QeTask):
         self.ngkpt = kwargs.pop('ngkpt')
         self.kshift = kwargs.get('kshift', 3*[.0])
         self.qshift = kwargs.get('qshift', 3*[.0])
-
+        self._input_fname   =   kwargs.get("input_fname", "pw2bgw.in")
+        self._output_fname  =   kwargs.get("output_fname", "pw2bgw.out")
+        self._flavor_complex    =   kwargs.get("flavor_complex", flavors["flavor_complex"])
 
         # Maybe let the defaults be handled by PW2BGWInput
 
@@ -173,7 +175,7 @@ class Qe2BgwTask(QeTask):
             kshift      = self.kshift,
             qshift      = self.qshift,
             wfng_file   = kwargs.get('wfn_fname', 'wfn.cplx'),
-            real_or_complex = 2 if flavors['flavor_complex'] else 1,
+            real_or_complex = 2 if self._flavor_complex else 1,
             wfng_flag   = True,
             wfng_kgrid  = True,
             )
@@ -183,15 +185,16 @@ class Qe2BgwTask(QeTask):
             rhog_file = 'rho.real',
             vxcg_flag = False,
             vxcg_file = 'vxc.real',
-            vxc_flag = True,
-            vxc_file = 'vxc.dat',
-            vxc_diag_nmin = 1,
-            vxc_diag_nmax = kwargs.get('nbnd', 1),
-            vxc_offdiag_nmin = 0,
-            vxc_offdiag_nmax = 0,
+            #vxc_flag = True,
+            #vxc_file = 'vxc.dat',
+            #vxc_diag_nmin = 1,
+            #vxc_diag_nmax = kwargs.get('nbnd', 1),
+            #vxc_offdiag_nmin = 0,
+            #vxc_offdiag_nmax = 0,
             )
 
-        if kwargs.get('rho_fname') or kwargs.get('rhog_flag'):
+        #if kwargs.get('rho_fname') or kwargs.get('rhog_flag'):
+        if not any(array(self.qshift)):
             defaults.update(rho_defaults)
 
         variables = dict()
@@ -199,6 +202,7 @@ class Qe2BgwTask(QeTask):
             variables[key] = kwargs.get(key, value)
 
         self.input = Qe2BgwInput(prefix=self.prefix, **variables)
+        self.wfn_fname  =   "wfn.cplx" if self._flavor_complex else "wfn.real"
 
         # Have to make sure the properties are set correctly.
         if 'wfn_fname' in kwargs:
@@ -213,35 +217,36 @@ class Qe2BgwTask(QeTask):
         self.input.fname = self._input_fname
 
         # Run script
-        self.runscript['PW2BGW'] = 'pw2bgw.x'
-        self.runscript.append('$MPIRUN $PW2BGW $PWFLAGS -in {} &> {}'.format(
+        self.runscript['PW2BGW'] = kwargs.get("PW2BGW", os.path.join(os.environ["QEDIR"], 'pw2bgw.x'))
+        self.runscript.append('$MPIRUN $PW2BGW -inp {} &> {}'.format(
                               self._input_fname, self._output_fname))
+        self.update_link(self.savedir, ".")
 
     _wfn_fname = 'wfn.cplx'
     @property
     def wfn_fname(self):
         return os.path.join(self.dirname, self._wfn_fname)
-    
+
     @wfn_fname.setter
     def wfn_fname(self, value):
         self._wfn_fname = value
         self.input['wfng_file'] = value
-    
+
     _rho_fname = 'rho.real'
     @property
     def rho_fname(self):
         return os.path.join(self.dirname, self._rho_fname)
-    
+
     @rho_fname.setter
     def rho_fname(self, value):
         self._rho_fname = value
         self.input['rhog_file'] = value
-    
+
     _vxc_dat_fname = 'vxc.dat'
     @property
     def vxc_dat_fname(self):
         return os.path.join(self.dirname, self._vxc_dat_fname)
-    
+
     @vxc_dat_fname.setter
     def vxc_dat_fname(self, value):
         self._vxc_dat_fname = value

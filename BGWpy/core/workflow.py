@@ -36,7 +36,7 @@ class Workflow(Task):
         if tasks is not None:
             self.tasks.extend(tasks)
 
-    def add_task(self, task, merge=False):
+    def add_task(self, task, merge=True):
         """
         Add a task to the workflow.
 
@@ -125,7 +125,7 @@ class Workflow(Task):
                 return status
         else:
             return self._STATUS_COMPLETED
-        
+
     def report(self, *args, **kwargs):
         for task in self.tasks:
             task.report(*args, **kwargs)

@@ -13,8 +13,8 @@ class QeScfTask(QeTask):
 
     _TASK_NAME = 'SCF'
 
-    _input_fname = 'scf.in'
-    _output_fname = 'scf.out'
+    #_input_fname = 'scf.in'
+    #_output_fname = 'scf.out'
 
     def __init__(self, dirname, **kwargs):
         """
@@ -71,6 +71,8 @@ class QeScfTask(QeTask):
         spin_polarization_fname : str, optional
             Path to the spin polarization file produced ('spin-polarization.dat').
         """
+        self._input_fname   =   kwargs.get("input_fname", "scf.in")
+        self._output_fname  =   kwargs.get("output_fname", "scf.out")
 
         super(QeScfTask, self).__init__(dirname, **kwargs)
 
@@ -79,10 +81,8 @@ class QeScfTask(QeTask):
         # Input file
         self.input = get_scf_input(
             self.prefix,
-            self.pseudo_dir,
-            self.pseudos,
+            self.pseudo_key,
             self.structure,
-            kwargs['ecutwfc'],
             kpts,
             wtks,
             )
@@ -93,7 +93,7 @@ class QeScfTask(QeTask):
         self.input.fname = self._input_fname
 
         # Run script
-        self.runscript.append('$MPIRUN $PW $PWFLAGS -in {} &> {}'.format(
+        self.runscript.append('$MPIRUN $PW $PWFLAGS -inp {} &> {}'.format(
                               self._input_fname, self._output_fname))
 
     @property

@@ -93,14 +93,14 @@ class QeBgwFlow(WfnBgwFlow):
 
         kwargs.pop('dirname', None)
 
-        self.charge_density_fname = kwargs['charge_density_fname']
-        self.data_file_fname = kwargs['data_file_fname']
+        #self.charge_density_fname = kwargs['charge_density_fname']
+        #self.data_file_fname = kwargs['data_file_fname']
         self.spin_polarization_fname = kwargs.get('spin_polarization_fname', 'dummy')
 
         # Wfn task
         self.wfntask = QeWfnTask(dirname = self.dirname, **kwargs)
         self.wfntask.runscript.fname = 'wfn.run.sh'
-        self.add_task(self.wfntask, merge=False)
+        self.add_task(self.wfntask, merge=True)
 
         # Wfn 2 BGW
         self.wfnbgwntask = Qe2BgwTask(
@@ -108,7 +108,7 @@ class QeBgwFlow(WfnBgwFlow):
             **kwargs)
         self.wfnbgwntask.runscript.fname = 'pw2bgw.run.sh'
 
-        self.add_task(self.wfnbgwntask, merge=False)
+        self.add_task(self.wfnbgwntask, merge=True)
 
     @property
     def charge_density_fname(self):

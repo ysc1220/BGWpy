@@ -46,10 +46,6 @@ class DFTTask(MPITask):
         if self.is_flavor_QE:
             self.version = kwargs.pop('version',  6)
 
-        # This task is not part of a workflow.
-        # It is executed on-the-fly and leaves no trace (clean_after=True). 
-        self.kgridtask = KgridTask(dirname=dirname, **kwargs)
-
     @ property
     def is_flavor_QE(self):
         return any([tag in self.flavor.lower() for tag in ['qe', 'espresso']])
@@ -80,14 +76,17 @@ class DFTTask(MPITask):
             Absolute shift of the k-points grid along each direction.
 
         """
+        # This task is not part of a workflow.
+        # It is executed on-the-fly and leaves no trace (clean_after=True).
+        kgridtask = KgridTask(fft = self.fft, dirname=self.dirname,**kwargs)
 
         symkpt = kwargs.get('symkpt', True)
 
         if 'ngkpt' in kwargs:
             if symkpt:
-                kpts, wtks = self.kgridtask.get_kpoints()
+                kpts, wtks = kgridtask.get_kpoints()
             else:
-                kpts, wtks = self.kgridtask.get_kpt_grid_nosym()
+                kpts, wtks = kgridtask.get_kpt_grid_nosym()
         else:
             kpts, wtks = kwargs['kpts'], kwargs['wtks']
 
