@@ -15,11 +15,11 @@ def get_scf_input(prefix, pseudo_key, structure, kpts, wtks):
     inp.electrons.update(
         electron_maxstep = 100,
         conv_thr = 1.0e-6,
-        mixing_mode = 'plain',
-        mixing_beta = 0.7,
-        mixing_ndim = 8,
-        diagonalization = 'david',
-        diago_david_ndim = 4,
+        #mixing_mode = 'plain',
+        #mixing_beta = 0.7,
+        #mixing_ndim = 8,
+        #diagonalization = 'david',
+        #diago_david_ndim = 4,
         diago_full_acc = True,
         )
 

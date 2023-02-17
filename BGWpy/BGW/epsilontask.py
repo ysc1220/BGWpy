@@ -65,6 +65,8 @@ class EpsilonTask(BGWTask):
         """
 
         super(EpsilonTask, self).__init__(dirname, **kwargs)
+        if "flavor_complex" in kwargs:
+            self._flavor_complex    =   bool(kwargs["flavor_complex"])
 
         # Compute k-points grids
         # TODO maybe make these properties
@@ -72,7 +74,7 @@ class EpsilonTask(BGWTask):
         #ngkpt = kwargs['ngkpt']
         #kpts_ush, wtks_ush = get_kpt_grid(structure, ngkpt)
         kgrid_kwargs = dict()
-        for key in ('structure', 'ngkpt', 'fft', 'use_tr', 'clean_after'):
+        for key in ('structure', 'ngkpt', 'fft', 'use_tr', 'clean_after', 'scfout_fname'):
             if key in kwargs:
                 kgrid_kwargs[key] = kwargs[key]
         self.kgridtask = KgridTask(dirname=dirname, **kgrid_kwargs)
@@ -132,9 +134,9 @@ class EpsilonTask(BGWTask):
         # Eventually, hdf5 will be mandatory.
         basename = 'eps0mat.h5' if self._use_hdf5 else 'eps0mat'
         return os.path.join(self.dirname, basename)
-    
+
     @property
     def epsmat_fname(self):
         basename = 'epsmat.h5' if self._use_hdf5 else 'epsmat'
         return os.path.join(self.dirname, basename)
-    
+

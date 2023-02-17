@@ -1,3 +1,4 @@
+import os
 from collections import OrderedDict
 import subprocess
 
@@ -195,5 +196,14 @@ class RunScript(Writable):
 
         return S
 
+    def write_js(self, js):
+        print("Writing", os.path.join(os.getcwd(), self.fname), "...")
+        with open(self.fname, "w") as fil:
+            fil.write(js.script(str(self)))
+
     def run(self):
         subprocess.call(['bash', self.fname])
+
+    def submit(self):
+        subprocess.call(['sbatch', self.fname])
+

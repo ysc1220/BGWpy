@@ -93,10 +93,16 @@ class Task(object):
         with self.exec_from_dirname():
             self.runscript.run()
 
+    def submit(self):
+        print("Submitting", self.js.header["job-name"], "...")
+        with self.exec_from_dirname():
+            self.runscript.submit()
+
     def write(self):
         subprocess.call(['mkdir', '-p', self.dirname])
         with self.exec_from_dirname():
-            self.runscript.write()
+            if hasattr(self, "js"): self.runscript.write_js(self.js)
+            else:                   self.runscript.write()
 
             if self.variables:
                 with open('variables.pkl', 'w') as f:
@@ -130,7 +136,7 @@ class Task(object):
             if link[1] == dest:
                 del self.runscript.links[i]
                 break
-        
+
     def update_copy(self, source, dest):
         """
         Modify or add a file to copy.
@@ -157,7 +163,7 @@ class Task(object):
         """True if the task reports a completed status."""
         status = self.get_status()
         return (status is self._STATUS_COMPLETED)
-        
+
     def report(self, file=None, color=True, **kwargs):
         """
         Report whether the task completed normally.
@@ -236,7 +242,7 @@ class MPITask(Task):
         for key in ('mpirun', 'nproc', 'nproc_flag',
                     'nproc_per_node', 'nproc_per_node_flag',
                     'nodes', 'nodes_flag'):
-                   
+
             if key in kwargs:
                 setattr(self, key, kwargs[key])
 

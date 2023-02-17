@@ -183,7 +183,7 @@ class Qe2BgwTask(QeTask):
         rho_defaults = dict(
             rhog_flag = True,
             rhog_file = 'rho.real',
-            vxcg_flag = False,
+            vxcg_flag = True,
             vxcg_file = 'vxc.real',
             #vxc_flag = True,
             #vxc_file = 'vxc.dat',

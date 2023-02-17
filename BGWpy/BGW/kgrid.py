@@ -58,6 +58,11 @@ class KgridTask(Task):
         self.fft = fft
         self.use_tr = use_tr
 
+        if "scfout_fname" in kwargs:
+            self.fft    =   read_fft(kwargs["scfout_fname"])
+        else:
+            print("[WARNING] FFT grid not read from scf output file. Please provide scfout_fname")
+
     def read_kpoints(self):
         """Read a list of kpoints and their weights from kgrid.x output file."""
         with open(self.outputname, 'r') as f:
@@ -83,25 +88,27 @@ class KgridTask(Task):
 
         with open(self.inputname, 'w') as f:
             f.write(self.get_kgrid_input())
+            print("Writing", os.path.join(os.getcwd(), self.inputname))
 
     def run(self):
         try:
+            print("Running kgrid.x ...")
             subprocess.call([self.executable, self.inputname,
                              self.outputname, self.logname])
         except OSError as E:
             message = (str(E) + '\n\n' +
             79 * '=' + '\n\n' +
-            'Could not find the executable kgrid.x\n' + 
+            'Could not find the executable kgrid.x\n' +
             'Please make sure it is available for execution.\n' +
-            'On a computing cluster, you might do this my loading the module:\n' + 
+            'On a computing cluster, you might do this my loading the module:\n' +
             '    module load berkeleygw\n' +
-            "If you compiled BerkeleyGW yourself, " + 
-            "make sure that the 'bin' directory\n" + 
+            "If you compiled BerkeleyGW yourself, " +
+            "make sure that the 'bin' directory\n" +
             'of BerkeleyGW is listed in your PATH environment variable.\n' +
             '\n' + 79 * '=' + '\n')
-                
+
             raise OSError(message)
-    
+
 
     def clean_up(self):
         """Remove all temporary files (input, output log)."""
@@ -126,28 +133,28 @@ class KgridTask(Task):
         ngkpt = self.ngkpt
         fft = self.fft
         use_tr = self.use_tr
-    
+
         abc = np.array(structure.lattice.abc)
-    
+
         latt_vec_rel = (structure.lattice.matrix.transpose() / abc).transpose().round(12)
         pos_cart_rel = np.dot(structure.frac_coords, latt_vec_rel).round(6)
-    
+
         S = ''
-    
+
         for arr in (ngkpt, kshift, qshift):
             S += fortran_str(arr) + '\n'
-    
+
         S += '\n'
-    
+
         for arr in latt_vec_rel.tolist() + [structure.num_sites]:
             S += fortran_str(arr) + '\n'
-    
+
         for Z, pos in zip(structure.atomic_numbers, pos_cart_rel):
             S += str(Z) + ' ' + fortran_str(pos) + '\n'
-    
+
         for arr in (fft, use_tr):
             S += fortran_str(arr) + '\n'
-    
+
         return S
 
     @staticmethod
@@ -165,17 +172,17 @@ class KgridTask(Task):
         kshift = self.kshift
         qshift = self.qshift
         nkx, nky, nkz = ngkpt
-    
+
         kpoints = list()
         weights = list()
         for ikx in range(nkx):
             for iky in range(nky):
                 for ikz in range(nkz):
-    
+
                     k = (np.array([ikx, iky, ikz]) + kshift) / ngkpt + qshift
                     kpoints.append(k)
                     weights.append(1.)
-    
+
         return np.array(kpoints), np.array(weights)
 
     def read_symmetries(self):
@@ -315,17 +322,17 @@ def get_kpt_grid(structure, ngkpt,
     except OSError as E:
         message = (str(E) + '\n\n' +
         79 * '=' + '\n\n' +
-        'Could not find the executable {} .\n'.format(executable) + 
+        'Could not find the executable {} .\n'.format(executable) +
         'Please make sure it is available for execution.\n' +
-        'On a computing cluster, you might do this my loading the module:\n' + 
+        'On a computing cluster, you might do this my loading the module:\n' +
         '    module load berkeleygw\n' +
-        "If you compiled BerkeleyGW yourself, " + 
-        "make sure that the 'bin' directory\n" + 
+        "If you compiled BerkeleyGW yourself, " +
+        "make sure that the 'bin' directory\n" +
         'of BerkeleyGW is listed in your PATH environment variable.\n' +
         '\n' + 79 * '=' + '\n')
-            
+
         raise OSError(message)
-    
+
 
     # Read the output
     with open(outputname, 'r') as f:
@@ -427,4 +434,17 @@ def get_kpt_grid_nosym(ngkpt, kshift=[.0,.0,.0], qshift=[.0,.0,.0]):
 
     return np.array(kpoints), np.array(weights)
 
+def read_fft(scfout_fname):
+    fft =   []
+    print("Reading", scfout_fname, "...")
+    with open(scfout_fname) as fil:
+        for line in fil:
+            if "FFT dimensions" in line:
+                line    =   line.replace(")", " ").replace(",", " ").split()
+                for i in range(7, 10):  fft.append(int(line[i]))
+
+    if len(fft) != 3:
+        raise Exception("FFT grid not found in "+scfout_fname)
+
+    return fft
 

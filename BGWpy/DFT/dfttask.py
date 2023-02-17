@@ -78,7 +78,7 @@ class DFTTask(MPITask):
         """
         # This task is not part of a workflow.
         # It is executed on-the-fly and leaves no trace (clean_after=True).
-        kgridtask = KgridTask(fft = self.fft, dirname=self.dirname,**kwargs)
+        kgridtask = KgridTask(dirname=self.dirname,**kwargs)
 
         symkpt = kwargs.get('symkpt', True)
 

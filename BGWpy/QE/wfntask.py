@@ -72,9 +72,7 @@ class QeWfnTask(QeTask):
         """
         self._input_fname   =   kwargs.get("input_fname", "wfn.in")
         self._output_fname  =   kwargs.get("output_fname", "wfn.out")
-        self._scfout_fname  =   kwargs.get("scfout_fname", "scf.out")
 
-        self.read_fft()
         super(QeWfnTask, self).__init__(dirname, **kwargs)
         self.add_pseudos_copy()
 
@@ -172,13 +170,4 @@ class QeWfnTask(QeTask):
         if 'pseudos' in dir(self):
             self.add_pseudos_copy()
 
-    def read_fft(self):
-        fft =   []
-        with open(self._scfout_fname) as fil:
-            for line in fil:
-                if "FFT dimensions" in line:
-                    line    =   line.replace(")", " ").replace(",", " ").split()
-                    for i in range(7, 10):  fft.append(int(line[i]))
-
-        self.fft    =   fft
 

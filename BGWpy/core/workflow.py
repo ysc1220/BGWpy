@@ -105,10 +105,11 @@ class Workflow(Task):
     def write(self):
         super(Workflow, self).write()
         for task in self.tasks:
-            task.write()
+            task.input.write()
         with self.exec_from_dirname():
             # Overwrite any runscript of the children tasks
-            self.runscript.write()
+            if hasattr(self, "js"): self.runscript.write_js(self.js)
+            else:                   self.runscript.write()
 
     #def run_tasks(self):
     #    for task in self.tasks:

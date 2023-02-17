@@ -1,3 +1,4 @@
+import os
 
 from collections import OrderedDict
 
@@ -8,6 +9,7 @@ class Writable(object):
 
     def write(self, fname=None):
         fname = fname if fname else self.fname
+        print("Writing", os.path.join(os.getcwd(), fname), "...")
         with open(fname, 'w') as f:
             f.write(str(self))
 
