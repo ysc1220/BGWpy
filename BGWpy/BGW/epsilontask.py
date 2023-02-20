@@ -74,7 +74,7 @@ class EpsilonTask(BGWTask):
         #ngkpt = kwargs['ngkpt']
         #kpts_ush, wtks_ush = get_kpt_grid(structure, ngkpt)
         kgrid_kwargs = dict()
-        for key in ('structure', 'ngkpt', 'fft', 'use_tr', 'clean_after', 'scfout_fname'):
+        for key in ('structure', 'ngkpt', 'fft', 'use_tr', 'clean_after'):
             if key in kwargs:
                 kgrid_kwargs[key] = kwargs[key]
         self.kgridtask = KgridTask(dirname=dirname, **kgrid_kwargs)

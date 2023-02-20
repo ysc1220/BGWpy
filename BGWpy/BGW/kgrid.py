@@ -16,7 +16,7 @@ class KgridTask(Task):
                  ngkpt = 3*[1],
                  kshift = 3*[.0],
                  qshift = 3*[.0],
-                 fft = 3*[0],
+                 fft = [1, 2, 3], # break symmetry no matter what
                  use_tr=False,
                  executable='kgrid.x',  # TODO remove executable and make bindir a global option
                  rootname='tmp.kgrid',
@@ -58,10 +58,10 @@ class KgridTask(Task):
         self.fft = fft
         self.use_tr = use_tr
 
-        if "scfout_fname" in kwargs:
-            self.fft    =   read_fft(kwargs["scfout_fname"])
-        else:
-            print("[WARNING] FFT grid not read from scf output file. Please provide scfout_fname")
+        #if "scfout_fname" in kwargs:
+        #    self.fft    =   read_fft(kwargs["scfout_fname"])
+        #else:
+        #    print("[WARNING] FFT grid not read from scf output file. Please provide scfout_fname")
 
     def read_kpoints(self):
         """Read a list of kpoints and their weights from kgrid.x output file."""
@@ -434,6 +434,7 @@ def get_kpt_grid_nosym(ngkpt, kshift=[.0,.0,.0], qshift=[.0,.0,.0]):
 
     return np.array(kpoints), np.array(weights)
 
+### OBSOLETE ###
 def read_fft(scfout_fname):
     fft =   []
     print("Reading", scfout_fname, "...")
@@ -447,4 +448,5 @@ def read_fft(scfout_fname):
         raise Exception("FFT grid not found in "+scfout_fname)
 
     return fft
+### OBSOLETE ###
 
