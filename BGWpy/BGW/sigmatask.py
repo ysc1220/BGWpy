@@ -77,6 +77,8 @@ class SigmaTask(BGWTask):
         """
 
         super(SigmaTask, self).__init__(dirname, **kwargs)
+        if "flavor_complex" in kwargs:
+            self._flavor_complex    =   bool(kwargs["flavor_complex"])
 
         extra_lines = kwargs.get('extra_lines',[])
         extra_variables = kwargs.get('extra_variables',{})
@@ -119,7 +121,7 @@ class SigmaTask(BGWTask):
                     kgrid_kwargs[key] = kwargs[key]
             self.kgridtask = KgridTask(dirname=dirname, **kgrid_kwargs)
             qpts, wtqs = self.kgridtask.get_kpoints()
-            
+
         else:
             qpts = []
         if 'ngqpt' in kwargs:
@@ -153,7 +155,7 @@ class SigmaTask(BGWTask):
 
         # It might be useful to issue a warning if those
         # files are not specified, but one would have to check the value
-        # of frequency_dependence... 
+        # of frequency_dependence...
         self.eps0mat_fname = kwargs.get('eps0mat_fname')
         self.epsmat_fname = kwargs.get('epsmat_fname')
 
@@ -229,14 +231,14 @@ class SigmaTask(BGWTask):
     def sigma_fname(self):
         """Path to the sigma_hp.log file produced."""
         return os.path.join(self.dirname, 'sigma_hp.log')
-    
+
     @property
     def eqp0_fname(self):
         """Path to the eqp0.dat file produced."""
         return os.path.join(self.dirname, 'eqp0.dat')
-    
+
     @property
     def eqp1_fname(self):
         """Path to the eqp1.dat file produced."""
         return os.path.join(self.dirname, 'eqp1.dat')
-    
+

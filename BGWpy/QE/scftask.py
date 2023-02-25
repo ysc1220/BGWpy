@@ -76,7 +76,7 @@ class QeScfTask(QeTask):
 
         super(QeScfTask, self).__init__(dirname, **kwargs)
 
-        kpts, wtks = self.get_kpts(**kwargs)
+        kpts, wtks = self.get_kpts(fft = [0, 0, 0], **kwargs)
 
         # Input file
         self.input = get_scf_input(
