@@ -12,6 +12,8 @@ class PlotxctTask(BGWTask):
     def __init__(self, dirname, **kwargs):
 
         super(PlotxctTask, self).__init__(dirname, **kwargs)
+        if "flavor_complex" in kwargs:
+            self._flavor_complex    =   bool(kwargs["flavor_complex"])
 
         extra_lines =   kwargs.get("extra_lines", [])
         extra_variables =   kwargs.get("extra_variables", {})

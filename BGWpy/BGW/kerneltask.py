@@ -59,6 +59,8 @@ class KernelTask(BGWTask):
         """
 
         super(KernelTask, self).__init__(dirname, **kwargs)
+        if "flavor_complex" in kwargs:
+            self._flavor_complex    =   bool(kwargs["flavor_complex"])
 
         # Compute k-points grids
 
@@ -118,14 +120,14 @@ class KernelTask(BGWTask):
     def bsedmat_fname(self):
         basename = 'bsedmat.h5' if self._use_hdf5 else 'bsedmat'
         return os.path.join(self.dirname, basename)
-    
+
     @property
     def bsexmat_fname(self):
         basename = 'bsexmat.h5' if self._use_hdf5 else 'bsexmat'
         return os.path.join(self.dirname, basename)
-    
+
     @property
     def bsemat_fname(self):
         basename = 'bsemat.h5' if self._use_hdf5 else 'bsemat'
         return os.path.join(self.dirname, basename)
-    
+

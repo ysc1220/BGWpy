@@ -63,6 +63,8 @@ class AbsorptionTask(BGWTask):
         """
 
         super(AbsorptionTask, self).__init__(dirname, **kwargs)
+        if "flavor_complex" in kwargs:
+            self._flavor_complex    =   bool(kwargs["flavor_complex"])
 
         # Input file
         self.input = AbsorptionInput(
