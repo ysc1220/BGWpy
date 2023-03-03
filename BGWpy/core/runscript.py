@@ -197,6 +197,7 @@ class RunScript(Writable):
         return S
 
     def write_js(self, js):
+        js.run_TMPDIR   =   False
         print("Writing", os.path.join(os.getcwd(), self.fname), "...")
         with open(self.fname, "w") as fil:
             fil.write(js.script(str(self)))
