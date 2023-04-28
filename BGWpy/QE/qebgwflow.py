@@ -1,4 +1,4 @@
-
+import os
 from os.path import join as pjoin
 
 from . import QeScfTask, QeWfnTask, Qe2BgwTask
@@ -109,6 +109,16 @@ class QeBgwFlow(WfnBgwFlow):
         self.wfnbgwntask.runscript.fname = 'pw2bgw.run.sh'
 
         self.add_task(self.wfnbgwntask, merge=True)
+
+    def write(self):
+        with self.exec_from_dirname():
+            self.wfntask.input.find_pseudo()
+            print("Writing %s/%s"%(os.getcwd(), self.wfntask._input_fname))
+            self.wfntask.input.calc.write_input(self.wfntask.input.atoms)
+            self.wfnbgwntask.input.write()
+            # Overwrite any runscript of the children tasks
+            if hasattr(self, "js"): self.runscript.write_js(self.js)
+            else:                   self.runscript.write()
 
     @property
     def charge_density_fname(self):

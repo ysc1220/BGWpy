@@ -120,6 +120,9 @@ class Task(object):
             self.remove_link(dest)
             return
 
+        if not os.path.isfile(target) and not os.path.exists(target):
+            print(f"[ERROR] {target} not found!")
+
         reltarget = os.path.relpath(
             target, os.path.join(self.dirname, os.path.dirname(dest)))
 

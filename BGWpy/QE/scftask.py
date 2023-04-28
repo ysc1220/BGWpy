@@ -4,6 +4,8 @@ import os
 from .qetask      import QeTask
 from .constructor import get_scf_input
 
+from util.qe import QE
+
 # Public
 __all__ = ['QeScfTask']
 
@@ -13,8 +15,8 @@ class QeScfTask(QeTask):
 
     _TASK_NAME = 'SCF'
 
-    #_input_fname = 'scf.in'
-    #_output_fname = 'scf.out'
+    _input_fname = 'scf.pwi'
+    _output_fname = 'scf.pwo'
 
     def __init__(self, dirname, **kwargs):
         """
@@ -71,21 +73,24 @@ class QeScfTask(QeTask):
         spin_polarization_fname : str, optional
             Path to the spin polarization file produced ('spin-polarization.dat').
         """
-        self._input_fname   =   kwargs.get("input_fname", "scf.in")
-        self._output_fname  =   kwargs.get("output_fname", "scf.out")
 
         super(QeScfTask, self).__init__(dirname, **kwargs)
 
-        kpts, wtks = self.get_kpts(fft = [0, 0, 0], **kwargs)
+        kpts        =   tuple(kwargs.get("ngkpt", [1, 1, 1]))
+        koffset     =   tuple(kwargs.get("kshift", [0, 0, 0]))
 
         # Input file
-        self.input = get_scf_input(
-            self.prefix,
-            self.pseudo_key,
-            self.structure,
-            kpts,
-            wtks,
-            )
+        cif2qepwi   =   kwargs.get("cif2qepwi", "../cif2qe.pwi")
+        self.input  =   QE(filname = cif2qepwi,
+                           xc_type = "pbe-",
+                           pseudo_type = "nc")
+        self.input.update_params({
+            "prefix":       self.prefix,
+            "calculation":  "scf"
+        })
+        self.input.calc.label       =   "scf"
+        self.input.params.kpts      =   kpts
+        self.input.params.koffset   =   koffset
 
         if 'variables' in kwargs:
             self.input.set_variables(kwargs['variables'])

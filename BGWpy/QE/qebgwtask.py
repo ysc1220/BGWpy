@@ -193,8 +193,7 @@ class Qe2BgwTask(QeTask):
             #vxc_offdiag_nmax = 0,
             )
 
-        #if kwargs.get('rho_fname') or kwargs.get('rhog_flag'):
-        if not any(array(self.qshift)):
+        if kwargs.get('rho_fname') or kwargs.get('rhog_flag'):
             defaults.update(rho_defaults)
 
         variables = dict()
@@ -217,9 +216,10 @@ class Qe2BgwTask(QeTask):
         self.input.fname = self._input_fname
 
         # Run script
-        self.runscript['PW2BGW'] = kwargs.get("PW2BGW", os.path.join(os.environ["QEDIR"], 'pw2bgw.x'))
-        self.runscript.append('$MPIRUN $PW2BGW -inp {} &> {}'.format(
-                              self._input_fname, self._output_fname))
+        self.runscript['PW2BGW'] = kwargs.get("PW2BGW", 'pw2bgw.x')
+        nproc   =   min(kwargs["nproc"], 32)
+        self.runscript.append('mpirun -n {} $PW2BGW -inp {} &> {}'.format(
+                              nproc, self._input_fname, self._output_fname))
         self.update_link(self.savedir, ".")
 
     _wfn_fname = 'wfn.cplx'

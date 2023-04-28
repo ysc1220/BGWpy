@@ -4,6 +4,7 @@ import os
 from .bgwtask import BGWTask
 from .kgrid   import KgridTask, get_kpt_grid
 from .inputs  import EpsilonInput
+from .degeneracy import DegeneracyTask
 
 # Public
 __all__ = ['EpsilonTask']
@@ -87,6 +88,11 @@ class EpsilonTask(BGWTask):
 
         extra_lines = kwargs.get('extra_lines',[])
         extra_variables = kwargs.get('extra_variables',{})
+
+        #if "number_bands" not in extra_variables:
+        #    extra_variables.update({
+        #        "number_bands": DegeneracyTask(kwargs["wfn_fname"]).get_number_bands()
+        #   })
 
         # Input file
         self.input = EpsilonInput(

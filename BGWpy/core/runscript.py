@@ -122,7 +122,9 @@ class RunScript(Writable):
         self.variables.update(other.variables)
         self.links.extend(other.links)
         self.copies.extend(other.copies)
+        self.header.extend(other.header)
         self.main.extend(['\n'] + other.main)
+        self.footer.extend(other.footer)
 
     def __setitem__(self, key, value):
         """Declare a variable."""

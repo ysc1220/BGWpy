@@ -37,10 +37,16 @@ class QeTask(DFTTask, IOTask):
         super(QeTask, self).__init__(dirname, **kwargs)
 
         self.prefix = kwargs.get('prefix', "qe")
-        self.pseudo_key =   kwargs.get("pseudo_key", ".")
+        #self.pseudo_key =   kwargs.get("pseudo_key", ".")
         self.savedir = kwargs.get("savedir", self.prefix + '.save')
 
-        self.runscript['PW'] = kwargs.get('PW', os.path.join(os.environ["QEDIR"], 'pw.x'))
+        self.runscript.header.append("module purge")
+        self.runscript.header.append("module load slurm cpu gcc/9.2.0 openmpi quantum-espresso/6.7.0-openblas")
+        self.mpirun =   'mpirun --map-by core --mca btl_openib_if_include "mlx5-2:1" --mca btl openib,self,vader'
+        self.nproc_flag =   ""
+        self.nproc      =   ""
+
+        self.runscript['PW'] = kwargs.get('PW', 'pw.x')
         self.runscript['PWFLAGS'] = kwargs.get('PWFLAGS', '')
 
     def exec_from_savedir(self):
@@ -50,10 +56,12 @@ class QeTask(DFTTask, IOTask):
         return exec_from_dir(os.path.join(self.dirname, self.savedir))
 
     def write(self):
-        self.check_pseudos()
+        #self.check_pseudos()
+        self.input.find_pseudo()
         super(QeTask, self).write()
         with self.exec_from_dirname():
-            self.input.write()
+            print("Writing %s/%s"%(os.getcwd(), self._input_fname))
+            self.input.calc.write_input(self.input.atoms)
             if not os.path.exists(self.savedir):
                 os.mkdir(self.savedir)
 

@@ -39,7 +39,7 @@ class PlotxctTask(BGWTask):
 
         extra_variables["plot_spin"]    =   plot_spin
         extra_variables["plot_state"]   =   plot_state
-        scfinp_fname    =   kwargs.get("scfinp_fname", "../../../QE/01-scf/scf.pwi")
+        scfinp_fname    =   kwargs.get("scfinp_fname", "../../../QE/01-scf/scf.in")
 
         supercell_size  =   kwargs["supercell_size"]
         if not "hole_position" in kwargs:

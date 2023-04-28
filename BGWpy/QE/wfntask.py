@@ -3,6 +3,7 @@ import os
 
 from .qetask      import QeTask
 from .constructor import get_bands_input
+from util.qe import QE
 
 # Public
 __all__ = ['QeWfnTask']
@@ -13,8 +14,8 @@ class QeWfnTask(QeTask):
 
     _TASK_NAME = 'Wfn'
 
-    #_input_fname = 'wfn.in'
-    #_output_fname = 'wfn.out'
+    _input_fname = 'bands.pwi'
+    _output_fname = 'bands.pwo'
 
     def __init__(self, dirname, **kwargs):
         """
@@ -70,34 +71,30 @@ class QeWfnTask(QeTask):
             Weights of each k-point.
 
         """
-        self._input_fname   =   kwargs.get("input_fname", "wfn.in")
-        self._output_fname  =   kwargs.get("output_fname", "wfn.out")
 
         super(QeWfnTask, self).__init__(dirname, **kwargs)
-        self.add_pseudos_copy()
+        #self.add_pseudos_copy()
 
         kpts, wtks = self.get_kpts(**kwargs)
 
         #self.charge_density_fname = kwargs['charge_density_fname']
-        if 'spin_polarization_fname' in kwargs:
-            self.spin_polarization_fname = kwargs['spin_polarization_fname']
+        #if 'spin_polarization_fname' in kwargs:
+        #    self.spin_polarization_fname = kwargs['spin_polarization_fname']
 
         #self.data_file_fname = kwargs['data_file_fname']
 
         # Input file
-        self.input = get_bands_input(
-            self.prefix,
-            self.pseudo_key,
-            self.structure,
-            kpts,
-            wtks,
-            nbnd = kwargs.get('nbnd'),
-            )
-
-        if 'variables' in kwargs:
-            self.input.set_variables(kwargs['variables'])
-
-        self.input.fname = self._input_fname
+        cif2qepwi   =   kwargs.get("cif2qepwi", "../cif2qe.pwi")
+        self.input  =   QE(filname = cif2qepwi,
+                           xc_type = "pbe-",
+                           pseudo_type = "nc")
+        self.input.update_params({
+            "prefix":           self.prefix,
+            "calculation":      "bands",
+            "diago_full_acc":   True
+        })
+        self.input.params.kpts      =   list(zip(kpts, wtks))
+        self.input.calc.label       =   "bands"
 
         # Run script
         self.runscript.append('$MPIRUN $PW $PWFLAGS -inp {} &> {}'.format(

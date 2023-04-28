@@ -4,6 +4,7 @@ import os
 from .bgwtask  import BGWTask
 from .kgrid    import KgridTask, get_kpt_grid
 from .inputs   import SigmaInput
+from .degeneracy import DegeneracyTask
 
 # Public
 __all__ = ['SigmaTask']
@@ -96,7 +97,7 @@ class SigmaTask(BGWTask):
             #ngkpt = kwargs['ngkpt']
             #kpts, wtks = get_kpt_grid(structure, ngkpt)
             kgrid_kwargs = dict()
-            for key in ('structure', 'ngkpt', 'fft', 'use_tr', 'clean_after'):
+            for key in ('structure', 'ngkpt', 'fft', 'use_tr', 'clean_after', 'kshift'):
                 if key in kwargs:
                     kgrid_kwargs[key] = kwargs[key]
             self.kgridtask = KgridTask(dirname=dirname, **kgrid_kwargs)
@@ -116,7 +117,7 @@ class SigmaTask(BGWTask):
             #ngqpt = kwargs['ngqpt']
             #qpts, wtqs = get_kpt_grid(structure, ngqpt)
             kgrid_kwargs = dict(ngkpt=kwargs['ngqpt'])
-            for key in ('structure', 'fft', 'use_tr', 'clean_after'):
+            for key in ('structure', 'fft', 'use_tr', 'clean_after', 'kshift'):
                 if key in kwargs:
                     kgrid_kwargs[key] = kwargs[key]
             self.kgridtask = KgridTask(dirname=dirname, **kgrid_kwargs)
@@ -128,6 +129,10 @@ class SigmaTask(BGWTask):
             extra_variables['qpts'] = qpts
             extra_variables['ngqpt'] = kwargs['ngqpt']
 
+        #if "number_bands" not in extra_variables:
+        #    extra_variables.update({
+        #        "number_bands": DegeneracyTask(kwargs["wfn_co_fname"]).get_number_bands()
+        #    })
 
         # Input file
         self.input = SigmaInput(
