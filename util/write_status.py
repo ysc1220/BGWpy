@@ -18,15 +18,16 @@ def check_bgw(filname):
 direcs  =   []
 
 for sw in ["QE", "BGW"]:
-    for direc in list(os.walk(f"../{sw}"))[0][1]:
-        direcs.append(direc)
+    if os.path.exists(f"../{sw}"):
+        for direc in list(os.walk(f"../{sw}"))[0][1]:
+            direcs.append(direc)
 direcs  =   sorted(direcs)
 
 begin_status()
 for direc in direcs:
     print(direc)
     if direc[:2] == "01":
-        edit_status(direc, check_qe(f"../QE/{direc}/scf.out"))
+        edit_status(direc, check_qe(f"../QE/{direc}/scf.pwo"))
     if direc[:2] in ["02", "03", "04"]:
         edit_status(direc, check_qe(f"../QE/{direc}/pw2bgw.out"))
     if direc[:2] == "07":
