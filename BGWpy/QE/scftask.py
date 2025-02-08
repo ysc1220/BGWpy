@@ -15,9 +15,6 @@ class QeScfTask(QeTask):
 
     _TASK_NAME = 'SCF'
 
-    _input_fname = 'scf.pwi'
-    _output_fname = 'scf.pwo'
-
     def __init__(self, dirname, **kwargs):
         """
         Arguments
@@ -75,6 +72,9 @@ class QeScfTask(QeTask):
         """
 
         super(QeScfTask, self).__init__(dirname, **kwargs)
+        self._input_fname   =   kwargs.get("input_fname", 'scf.pwi')
+        self._output_fname  =   kwargs.get("output_fname", 'scf.pwo')
+
 
         kpts        =   tuple(kwargs.get("ngkpt", [1, 1, 1]))
         koffset     =   tuple(kwargs.get("kshift", [0, 0, 0]))
@@ -82,13 +82,13 @@ class QeScfTask(QeTask):
         # Input file
         cif2qepwi   =   kwargs.get("cif2qepwi", "../cif2qe.pwi")
         self.input  =   QE(filname = cif2qepwi,
-                           xc_type = "pbe-",
-                           pseudo_type = "nc")
+                           xc_type = kwargs.get("xc_type", "pbe-"),
+                           pseudo_type = kwargs.get("pseudo_type", "ONCV-1.2"))
         self.input.update_params({
             "prefix":       self.prefix,
             "calculation":  "scf"
         })
-        self.input.calc.label       =   "scf"
+        self.input.calc.label       =   self._input_fname.replace(".pwi", "")
         self.input.params.kpts      =   kpts
         self.input.params.koffset   =   koffset
 

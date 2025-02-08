@@ -11,7 +11,7 @@ import os
 import configparser
 config_file = os.path.join(os.environ['HOME'], '.BGWpyrc')
 if os.path.exists(config_file):
-    config = configparser.ConfigParser(comment_prefixes=(';'))                      
+    config = configparser.ConfigParser(comment_prefixes=(';'))
     config.read(config_file)
 
     sk = 'flavors'
@@ -28,7 +28,7 @@ if os.path.exists(config_file):
                 flavors[key] = config[sk][key]
 
     sk = 'MPI'
-    keys = ('mpirun', 'nproc', 'nproc_flag',
+    keys = ('mpirun', 'mpirun_QE','nproc', 'nproc_flag',
             'nproc_per_node', 'nproc_per_node_flag',
             'nodes', 'nodes_flag')
     if sk in config:
@@ -37,7 +37,7 @@ if os.path.exists(config_file):
                 default_mpi[key] = config[sk][key]
 
     sk = 'runscript'
-    keys = ('first_line', 'header', 'footer')
+    keys = ('first_line', 'header', 'header_QE', 'header_BGW', 'footer')
     if sk in config:
         for key in keys:
             if key in config[sk]:

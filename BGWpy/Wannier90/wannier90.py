@@ -66,7 +66,7 @@ class Wannier90Input(Writable):
 
         S += '\nBegin Unit_Cell_Cart\n'
         S += 'Angstrom\n'
-        latt_vec = np.round(self.structure.lattice_vectors(), 8)
+        latt_vec = np.round(self.structure.lattice.matrix, 14)
         S += arr_str(latt_vec) + '\n'
         S += 'End Unit_Cell_Cart\n'
 

@@ -5,64 +5,82 @@ import json
 from pymatgen.core import Structure
 from BGWpy import SigmaTask
 
+from util.job_script import JS
+
+#########################
 ngkpt   =   []
-kstring =   ""
+kstr    =   ""
+kstr_job    =   ""
 for k in sys.argv[1:4]:
     ngkpt.append(int(k))
-    kstring +=  "_"+k
+    kstr        +=  "_"+k
+    kstr_job    +=  k
+ibnd_min    =   121
+ibnd_max    =   144
+nodes       =   16
+submit      =   False
+if len(sys.argv) >= 5:
+    submit  =   bool(int(sys.argv[4]))
+rerun       =   False
+if len(sys.argv) == 6:
+    rerun   =   bool(int(sys.argv[5]))
+#########################
+extra_lines     =   [
+    "screening_semiconductor",
+    "dont_use_vxcdat"
+]
+if rerun:
+    extra_lines.append("eqp_outer_corrections")
 
-ngkpt_co    =   []
-kstring_co  =   ""
-for k in sys.argv[4:7]:
-    ngkpt_co.append(int(k))
-    kstring_co  +=  "_"+k
-
-structure   =   Structure.from_file("../AgSePh_prim.cif")
+structure   =   Structure.from_file("../ibrav.cif")
 
 with open("../general.json") as fil:
     general_settings    =   json.load(fil)
+general_settings["nproc"]   =   128*nodes
+suffix  =   "real"
+if general_settings["flavor_complex"]:  suffix  =   "cplx"
 
-extra_lines =   [
-    "screening_semiconductor",
-    "dont_use_vxcdat",
-    "dont_use_hdf5",
-]
-
-sigma_input_files   =   {
-    "ngkpt":            ngkpt_co,
-    "wfn_co_fname":     f"../QE/02-wfn{kstring_co}/wfn.real",
-    "rho_fname":        f"../QE/02-wfn{kstring_co}/rho.real",
-    "vxc_fname":        f"../QE/02-wfn{kstring_co}/vxc.real",
-
-    "eps0mat_fname":    f"../BGW/07-epsilon{kstring}/eps0mat",
-    "epsmat_fname":     f"../BGW/07-epsilon{kstring}/epsmat",
-
-    "ibnd_min": 119,
-    "ibnd_max": 142,
-
-    "extra_lines":  extra_lines
-}
-
-sigma_task  =   SigmaTask(
-    dirname =   f"../BGW/08-sigma{kstring}{kstring_co}",
+sigma_task      =   SigmaTask(
+    dirname     =   f"../BGW/08-sigma{kstr}",
     structure   =   structure,
-    **sigma_input_files,
-    **general_settings
+    ngkpt       =   ngkpt,
+
+    wfn_co_fname    =   f"../QE/02-wfn{kstr}/wfn.{suffix}",
+    rho_fname       =   f"../QE/02-wfn{kstr}/rho.real",
+    vxc_fname       =   f"../QE/02-wfn{kstr}/vxc.real",
+
+    eps0mat_fname   =   f"../BGW/07-epsilon{kstr}/eps0mat",
+    epsmat_fname    =   f"../BGW/07-epsilon{kstr}/epsmat",
+
+    ibnd_min        =   ibnd_min,
+    ibnd_max        =   ibnd_max,
+    extra_lines     =   extra_lines,
+
+    **general_settings,
 )
 
-kstring =   kstring.replace("_", "")
-kstring_co  =   kstring_co.replace("_", "")
+if rerun:
+    dirname =   sigma_task.dirname
+    if not os.path.exists(dirname+"/bk"):
+        os.mkdir(dirname+"/bk")
+    if os.path.isfile(dirname+"/bk/sigma.out"):
+        print("Output files already exists in bk folder. Move this first.")
+        sys.exit()
+    os.system(f"mv {dirname}/*dat {dirname}/sigma* {dirname}/bk")
+    BGWDIR  =   os.environ["BGWDIR"]
+    os.system(f"python {BGWDIR}/../Sigma/eqp.py eqp0 {dirname}/bk/sigma_hp.log {dirname}/eqp_outer.dat")
+    sigma_task.update_link(sigma_task.wfn_co_fname, "WFN_outer")
 
-from util.job_script import JS
 js  =   JS(header = {
-    "job-name": f"08-sigma{kstring}{kstring_co}",
-    "time":     "168:00:00",
-    "ntasks":   40
+    "job-name": f"08-sigma{kstr_job}",
+    "time":     "48:00:00",
+    "nodes":    nodes,
+    "ntasks":   general_settings["nproc"],
+    "partition":    "compute"
 })
-js.run_TMPDIR   =   False
-js.before_job   =   "ulimit -s unlimited\n"
-sigma_task.js   =   js
+sigma_task.js =   js
 
 sigma_task.write()
-sigma_task.submit()
+if submit:
+    sigma_task.submit()
 

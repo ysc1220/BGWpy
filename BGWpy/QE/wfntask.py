@@ -77,17 +77,22 @@ class QeWfnTask(QeTask):
 
         kpts, wtks = self.get_kpts(**kwargs)
 
-        #self.charge_density_fname = kwargs['charge_density_fname']
+        with self.exec_from_dirname():
+            if not os.path.exists(f"{self.prefix}.save"):
+                os.mkdir(f"{self.prefix}.save")
+        self.charge_density_fname = kwargs.get('charge_density_fname',
+                                f"{self.savedir}/charge-density.dat")
         #if 'spin_polarization_fname' in kwargs:
         #    self.spin_polarization_fname = kwargs['spin_polarization_fname']
 
-        #self.data_file_fname = kwargs['data_file_fname']
+        self.data_file_fname = kwargs.get('data_file_fname',
+                                f"{self.savedir}/data-file-schema.xml")
 
         # Input file
         cif2qepwi   =   kwargs.get("cif2qepwi", "../cif2qe.pwi")
         self.input  =   QE(filname = cif2qepwi,
-                           xc_type = "pbe-",
-                           pseudo_type = "nc")
+                           xc_type = kwargs.get("xc_type", "pbe-"),
+                           pseudo_type = kwargs.get("pseudo_type", "ONCV-1.2"))
         self.input.update_params({
             "prefix":           self.prefix,
             "calculation":      "bands",
@@ -108,8 +113,8 @@ class QeWfnTask(QeTask):
     def charge_density_fname(self, value):
         self._charge_density_fname = value
         name = 'charge-density.hdf5' if self._use_hdf5_qe else 'charge-density.dat'
-        dest = os.path.join(self.savedir, name)
-        #self.update_link(value, dest)
+        dest = os.path.join(f"{self.prefix}.save", name)
+        self.update_link(value, dest)
 
     @property
     def spin_polarization_fname(self):
@@ -118,7 +123,7 @@ class QeWfnTask(QeTask):
     @spin_polarization_fname.setter
     def spin_polarization_fname(self, value):
         self._spin_polarization_fname = value
-        dest = os.path.join(self.savedir, 'spin-polarization.dat')
+        dest = os.path.join(f"{self.prefix}.save", 'spin-polarization.dat')
         #self.update_link(value, dest)
 
     @property
@@ -129,10 +134,10 @@ class QeWfnTask(QeTask):
     def data_file_fname(self, value):
         self._data_file_fname = value
         if self.version >= 6:
-            dest = os.path.join(self.savedir, 'data-file-schema.xml')
+            dest = os.path.join(f"{self.prefix}.save", 'data-file-schema.xml')
         else:
-            dest = os.path.join(self.savedir, 'data-file.xml')
-        #self.update_copy(value, dest)
+            dest = os.path.join(f"{self.prefix}.save", 'data-file.xml')
+        self.update_copy(value, dest)
 
     def add_pseudos_copy(self):
         """

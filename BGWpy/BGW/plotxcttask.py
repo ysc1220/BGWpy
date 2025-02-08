@@ -39,7 +39,7 @@ class PlotxctTask(BGWTask):
 
         extra_variables["plot_spin"]    =   plot_spin
         extra_variables["plot_state"]   =   plot_state
-        scfinp_fname    =   kwargs.get("scfinp_fname", "../../../QE/01-scf/scf.in")
+        scfinp_fname    =   kwargs.get("scfinp_fname", "../../../QE/01-scf/scf.pwi")
 
         supercell_size  =   kwargs["supercell_size"]
         if not "hole_position" in kwargs:
@@ -61,9 +61,9 @@ class PlotxctTask(BGWTask):
 
         # Prepare links
         self.wfn_fi_fname   =   kwargs.get("wfn_fi_fname",
-                                f"../QE/04-wfn_fi{kstr_fi}/wfn.{suff}")
+                                f"../QE/04-wfn{kstr_fi}/wfn.{suff}")
         self.wfnq_fi_fname  =   kwargs.get("wfnq_fi_fname",
-                                f"../QE/05-wfnq_fi{kstr_fi}/wfn.{suff}")
+                                f"../QE/03-wfnq{kstr_fi}/wfn.{suff}")
         self.eigvec_fname   =   kwargs.get("eigvec_fname",
                                 f"../BGW/10-absorption{kstr}{kstr_fi}{nstr}/eigenvectors")
 

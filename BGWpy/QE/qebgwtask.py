@@ -220,7 +220,7 @@ class Qe2BgwTask(QeTask):
         nproc   =   min(kwargs["nproc"], 32)
         self.runscript.append('mpirun -n {} $PW2BGW -inp {} &> {}'.format(
                               nproc, self._input_fname, self._output_fname))
-        self.update_link(self.savedir, ".")
+        #self.update_link(self.savedir, ".")
 
     _wfn_fname = 'wfn.cplx'
     @property

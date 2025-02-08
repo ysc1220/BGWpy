@@ -2,7 +2,7 @@ from __future__ import print_function
 
 import os
 
-from ..config import flavors
+from ..config import flavors, default_runscript, default_mpi
 from ..core.util import exec_from_dir
 from ..core import MPITask, IOTask
 from ..DFT import DFTTask
@@ -40,9 +40,8 @@ class QeTask(DFTTask, IOTask):
         #self.pseudo_key =   kwargs.get("pseudo_key", ".")
         self.savedir = kwargs.get("savedir", self.prefix + '.save')
 
-        self.runscript.header.append("module purge")
-        self.runscript.header.append("module load slurm cpu gcc/9.2.0 openmpi quantum-espresso/6.7.0-openblas")
-        self.mpirun =   'mpirun --map-by core --mca btl_openib_if_include "mlx5-2:1" --mca btl openib,self,vader'
+        self.runscript.header.append(default_runscript['header_QE'])
+        self.mpirun =   default_mpi['mpirun_QE']
         self.nproc_flag =   ""
         self.nproc      =   ""
 

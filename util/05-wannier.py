@@ -1,8 +1,10 @@
+import os
 import sys
 import json
 
 from pymatgen.core import Structure
-from BGWpy import QeBgwFlow
+from BGWpy import QeWfnTask
+from BGWpy.Wannier90.wannier90 import Wannier90Input
 
 from util.job_script import JS
 
@@ -24,14 +26,15 @@ structure   =   Structure.from_file("../ibrav.cif")
 
 with open("../general.json") as fil:
     general_settings    =   json.load(fil)
-general_settings["nproc"]   =   32
+general_settings["nproc"]   =   128
+general_settings["qshift"]  =   [0, 0, 0]
 
 with open("../qe.json") as fil:
     scf_settings    =   json.load(fil)
 scf_settings["nbnd"]    =   nbands
 
-wfn_flow    =   QeBgwFlow(
-    dirname     =   f"../QE/03-wfnq{kstr}",
+wfntask     =   QeWfnTask(
+    dirname     =   f"../QE/05-wannier",
     structure   =   structure,
     ngkpt       =   ngkpt,
 
@@ -39,19 +42,41 @@ wfn_flow    =   QeBgwFlow(
 
     **general_settings,
 )
-wfn_flow.wfntask.input.update_params(scf_settings)
+wfntask.input.update_params(scf_settings)
 
+os.chdir(wfntask.dirname)
+wanniertask     =   Wannier90Input(
+    structure   =   structure,
+    nbnd        =   146,
+    nwann       =   132,
+    kbounds     =   [
+        [0.5, 0, 0],
+        [0, 0, 0],
+        [0.5, 0.5, 0.5],
+        [0, 0.5, 0.5],
+        [0, 0, 0],
+        [0, 0.5, 0]
+    ],
+    klabels     =   ["Z", "G", "M", "E", "G", "X"],
+    mp_grid     =   ngkpt,
+    kpts        =   [row[0] for row in wfntask.input.params.kpts],
+    projections =   ["Ag : s;d", "S : p", "C: p", "O: p"],
+)
+with open("qe.win", "w") as fil:
+    fil.write(str(wanniertask))
+
+'''
 js  =   JS(header = {
-    "job-name": f"03-wfnq{kstr_job}",
+    "job-name": f"04-wfn_fi{kstr_job}",
     "time": "48:00:00",
     "nodes": 1,
     "ntasks": general_settings["nproc"],
-    "partition": "shared"
+    "partition": "compute"
 })
 wfn_flow.js =   js
 
 wfn_flow.write()
 if submit:
     wfn_flow.submit()
-
+'''
 

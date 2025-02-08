@@ -129,10 +129,10 @@ class SigmaTask(BGWTask):
             extra_variables['qpts'] = qpts
             extra_variables['ngqpt'] = kwargs['ngqpt']
 
-        #if "number_bands" not in extra_variables:
-        #    extra_variables.update({
-        #        "number_bands": DegeneracyTask(kwargs["wfn_co_fname"]).get_number_bands()
-        #    })
+        if "number_bands" not in extra_variables:
+            extra_variables.update({
+                "number_bands": DegeneracyTask(kwargs["wfn_co_fname"]).get_number_bands()
+            })
 
         # Input file
         self.input = SigmaInput(
@@ -225,7 +225,8 @@ class SigmaTask(BGWTask):
     def epsmat_fname(self, value):
         self._epsmat_fname = value
         dest = 'epsmat.h5' if self._use_hdf5 else 'epsmat'
-        self.update_link(value, dest)
+        if type(value) == str:
+            self.update_link(value, dest)
 
     def write(self):
         super(SigmaTask, self).write()

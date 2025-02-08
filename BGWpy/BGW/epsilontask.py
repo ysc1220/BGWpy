@@ -89,10 +89,10 @@ class EpsilonTask(BGWTask):
         extra_lines = kwargs.get('extra_lines',[])
         extra_variables = kwargs.get('extra_variables',{})
 
-        #if "number_bands" not in extra_variables:
-        #    extra_variables.update({
-        #        "number_bands": DegeneracyTask(kwargs["wfn_fname"]).get_number_bands()
-        #   })
+        if "number_bands" not in extra_variables:
+            extra_variables.update({
+                "number_bands": DegeneracyTask(kwargs["wfn_fname"]).get_number_bands()
+           })
 
         # Input file
         self.input = EpsilonInput(

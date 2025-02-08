@@ -108,7 +108,12 @@ class Workflow(Task):
         #    task.input.write()
         with self.exec_from_dirname():
             for task in self.tasks:
-                task.input.write()
+                if hasattr(task.input, "calc"):
+                    task.input.find_pseudo()
+                    print("Writing %s/%s"%(os.getcwd(), task._input_fname))
+                    task.input.calc.write_input(task.input.atoms)
+                else:
+                    task.input.write()
             # Overwrite any runscript of the children tasks
             if hasattr(self, "js"): self.runscript.write_js(self.js)
             else:                   self.runscript.write()
